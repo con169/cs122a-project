@@ -21,11 +21,15 @@
 
 4. Set up environment variables by creating a `.env` file with:
     ```sh
-    DB_HOST=your_host
-    DB_USER=your_user
-    DB_PASSWORD=your_password
-    DB_NAME=your_database
+    MYSQL_HOST={your_host}
+    MYSQL_USER={your_root}
+    MYSQL_PASSWORD={your_password}
+    MYSQL_DATABASE={your_database}
     ```
 
 5. Run using command line:
 ``` python project.py ```
+
+
+If adding new dependencies:
+`pip freeze > requirements.txt`
