@@ -40,6 +40,7 @@ def reset_database():
 
     try:
         cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
+        cursor.execute("SET GLOBAL local_infile = 1;")
         logging.info("Disabled foreign key checks.")
 
         # Drop all tables
