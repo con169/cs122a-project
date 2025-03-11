@@ -24,7 +24,6 @@
     MYSQL_HOST={your_host}
     MYSQL_USER={your_root}
     MYSQL_PASSWORD={your_password}
-    MYSQL_DATABASE={your_database}
     ```
 
 5. Run using command line:
