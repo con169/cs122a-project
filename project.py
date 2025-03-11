@@ -2,6 +2,7 @@ import mysql.connector
 import os
 import sys
 import logging
+import csv
 #from dotenv import load_dotenv
 
 # Try loading dotenv only if it's available (for local testing)
@@ -23,7 +24,7 @@ def get_connection():
             host=os.getenv('MYSQL_HOST'),
             user=os.getenv('MYSQL_USER'),
             password=os.getenv('MYSQL_PASSWORD'),
-            database=os.getenv('MYSQL_DATABASE'),
+            database='cs122a',
             allow_local_infile=True  # Needed for LOAD DATA LOCAL INFILE
         )
         logging.info("Connected to MySQL DB successfully")
@@ -31,6 +32,10 @@ def get_connection():
     except mysql.connector.Error as e:
         logging.error(f"Error connecting to MySQL DB: {e}")
         return None
+
+import os
+import mysql.connector
+import logging
 
 def reset_database():
     """
@@ -43,21 +48,23 @@ def reset_database():
     cursor = conn.cursor()
 
     try:
-        cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
-        cursor.execute("SET GLOBAL local_infile = 1;")
-        logging.info("Disabled foreign key checks.")
+        # Ensure we are using the correct database
+        cursor.execute("USE cs122a;")
 
         # Drop all tables
-        tables = ["movies", "producers", "releases", "reviews", "series", "sessions", "users", "videos", "viewers"]
+        tables = ["reviews", "sessions", "videos", "series", "movies", "releases", "producers", "viewers", "users"]
         for table in tables:
             cursor.execute(f"DROP TABLE IF EXISTS {table};")
             logging.info(f"Dropped table {table}")
 
-        cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
-        logging.info("Re-enabled foreign key checks.")
+        # Check if schema.sql exists
+        schema_path = os.path.join(os.path.dirname(__file__), "schema.sql")
+        if not os.path.exists(schema_path):
+            logging.error(f"Error: schema.sql file not found at {schema_path}!")
+            return
 
-        # Read schema.sql and execute the commands
-        with open("schema.sql", "r") as ddl_file:
+        # Read and execute schema.sql
+        with open(schema_path, "r") as ddl_file:
             schema_sql = ddl_file.read()
             for statement in schema_sql.split(";"):
                 if statement.strip():
@@ -74,9 +81,10 @@ def reset_database():
 
 
 
-def import_csv_with_load_data(folder):
+
+def import_csv_with_insert(folder):
     """
-    Uses LOAD DATA LOCAL INFILE to quickly import CSV files in the correct order.
+    Reads CSV files and inserts data using INSERT INTO instead of LOAD DATA LOCAL INFILE.
     """
     conn = get_connection()
     if not conn:
@@ -90,22 +98,25 @@ def import_csv_with_load_data(folder):
 
     for table in tables:
         file_path = os.path.join(folder, f"{table}.csv")
-        abs_file_path = os.path.abspath(file_path).replace('\\', '/')
+        abs_file_path = os.path.abspath(file_path)
 
         if not os.path.exists(abs_file_path):
             logging.warning(f"File {file_path} not found. Skipping.")
             continue
 
         try:
-            sql = f"""
-            LOAD DATA LOCAL INFILE '{abs_file_path}'
-            INTO TABLE {table}
-            FIELDS TERMINATED BY ',' 
-            LINES TERMINATED BY '\\n'
-            IGNORE 1 ROWS;
-            """
             logging.info(f"Importing {table}.csv into table {table}...")
-            cursor.execute(sql)
+
+            # Open CSV file and insert row-by-row
+            with open(abs_file_path, newline='', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                columns = next(reader)  # Read header row
+                placeholders = ', '.join(['%s'] * len(columns))  # Generate placeholders
+                insert_query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})"
+
+                for row in reader:
+                    cursor.execute(insert_query, row)
+
             conn.commit()
             logging.info(f"Successfully imported {table}.csv")
         except mysql.connector.Error as e:
@@ -127,7 +138,7 @@ if __name__ == '__main__':
             sys.exit(1)
         folder_name = sys.argv[2]
         reset_database()  # Delete and recreate tables
-        import_csv_with_load_data(folder_name)
+        import_csv_with_insert(folder_name)
         print("Success")
 
     # More commands like insertViewer, addGenre, etc., will go here
