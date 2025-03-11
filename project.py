@@ -86,7 +86,7 @@ def import_csv_with_load_data(folder):
 
     for table in tables:
         file_path = os.path.join(folder, f"{table}.csv")
-        abs_file_path = os.path.abspath(file_path)
+        abs_file_path = os.path.abspath(file_path).replace('\\', '/')
 
         if not os.path.exists(abs_file_path):
             logging.warning(f"File {file_path} not found. Skipping.")
@@ -94,7 +94,7 @@ def import_csv_with_load_data(folder):
 
         try:
             sql = f"""
-            LOAD DATA LOCAL INFILE '{abs_file_path.replace('\\', '/')}'
+            LOAD DATA LOCAL INFILE '{abs_file_path}'
             INTO TABLE {table}
             FIELDS TERMINATED BY ',' 
             LINES TERMINATED BY '\\n'
