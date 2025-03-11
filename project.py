@@ -4,8 +4,12 @@ import sys
 import logging
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Try importing dotenv, but don't crash if it's missing
+try:
+    from dotenv import load_dotenv
+    load_dotenv()  # Load environment variables if the module is available
+except ModuleNotFoundError:
+    logging.warning("Module 'dotenv' not found. Skipping loading .env file.")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
