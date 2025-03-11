@@ -2,14 +2,14 @@ import mysql.connector
 import os
 import sys
 import logging
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
-# Try importing dotenv, but don't crash if it's missing
+# Try loading dotenv only if it's available (for local testing)
 try:
-    from dotenv import load_dotenv
-    load_dotenv()  # Load environment variables if the module is available
-except ModuleNotFoundError:
-    logging.warning("Module 'dotenv' not found. Skipping loading .env file.")
+    import dotenv
+    dotenv.load_dotenv()
+except ImportError:
+    pass  # No error, just skip loading .env if it's missing
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
