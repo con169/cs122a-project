@@ -2,7 +2,7 @@ DROP DATABASE IF EXISTS cs122a;
 CREATE DATABASE cs122a;
 USE cs122a;
 
-CREATE TABLE Users (
+CREATE TABLE users (
 	uid INTEGER AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(30) UNIQUE NOT NULL,
     joined_date DATE,
@@ -15,52 +15,52 @@ CREATE TABLE Users (
     
 );
 
-CREATE TABLE Producers (
+CREATE TABLE producers (
 	uid INTEGER PRIMARY KEY,
     bio VARCHAR(200),
     company VARCHAR(50),
-    FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE
+    FOREIGN KEY (uid) REFERENCES users(uid) ON DELETE CASCADE
 );
 
-CREATE TABLE Viewers (
+CREATE TABLE viewers (
 	uid INTEGER PRIMARY KEY,
     subscription ENUM('free', 'monthly', 'yearly') DEFAULT 'free',
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
-    FOREIGN KEY (uid) REFERENCES Users(uid) ON DELETE CASCADE
+    FOREIGN KEY (uid) REFERENCES users(uid) ON DELETE CASCADE
 );
  
-CREATE TABLE Releases (
+CREATE TABLE releases (
 	rid INTEGER PRIMARY KEY AUTO_INCREMENT,
 	producer_uid INTEGER NOT NULL,
 	title VARCHAR(200) NOT NULL,
 	genre VARCHAR(50),
 	release_date DATE,
-	FOREIGN KEY (producer_uid) REFERENCES Producers(uid)
+	FOREIGN KEY (producer_uid) REFERENCES producers(uid)
 );
 
-CREATE TABLE Movies (
+CREATE TABLE movies (
 	rid INTEGER PRIMARY KEY,
     website_url VARCHAR(255) NOT NULL,
-    FOREIGN KEY (rid) REFERENCES Releases(rid) ON DELETE CASCADE
+    FOREIGN KEY (rid) REFERENCES releases(rid) ON DELETE CASCADE
 );
 
-CREATE TABLE Series (
+CREATE TABLE series (
 	rid INTEGER PRIMARY KEY,
     introduction TEXT NOT NULL,
-    FOREIGN KEY (rid) REFERENCES Releases(rid) ON DELETE CASCADE
+    FOREIGN KEY (rid) REFERENCES releases(rid) ON DELETE CASCADE
 );
 
-CREATE TABLE Videos (
+CREATE TABLE videos (
 	rid INTEGER,
     ep_num INTEGER,
     title VARCHAR(200) NOT NULL,
     length INTEGER NOT NULL,	
     PRIMARY KEY (rid, ep_num),
-    FOREIGN KEY (rid) REFERENCES Releases(rid) ON DELETE CASCADE
+    FOREIGN KEY (rid) REFERENCES releases(rid) ON DELETE CASCADE
 );
 
-CREATE TABLE Sessions (
+CREATE TABLE sessions (
 	sid INTEGER PRIMARY KEY AUTO_INCREMENT,
     uid INTEGER NOT NULL,
     rid INTEGER NOT NULL,
@@ -69,17 +69,17 @@ CREATE TABLE Sessions (
     leave_at DATETIME DEFAULT NULL,
     quality ENUM('480p', '720p', '1080p'),
     device ENUM('mobile','desktop'),
-    FOREIGN KEY (uid) REFERENCES Viewers(uid) ON DELETE CASCADE,
-    FOREIGN KEY (rid, ep_num) REFERENCES Videos(rid, ep_num) ON DELETE CASCADE
+    FOREIGN KEY (uid) REFERENCES viewers(uid) ON DELETE CASCADE,
+    FOREIGN KEY (rid, ep_num) REFERENCES videos(rid, ep_num) ON DELETE CASCADE
 );
 
-CREATE TABLE Reviews (
+CREATE TABLE reviews (
 	rvid INTEGER PRIMARY KEY AUTO_INCREMENT,
     uid INTEGER NOT NULL,
     rid INTEGER NOT NULL,
     rating DECIMAL(2,1) NOT NULL,
     body TEXT,
     posted_at DATETIME NOT NULL,
-    FOREIGN KEY (uid) REFERENCES Viewers(uid) ON DELETE CASCADE,
-    FOREIGN KEY (rid) REFERENCES Releases(rid) ON DELETE CASCADE
+    FOREIGN KEY (uid) REFERENCES viewers(uid) ON DELETE CASCADE,
+    FOREIGN KEY (rid) REFERENCES releases(rid) ON DELETE CASCADE
 );

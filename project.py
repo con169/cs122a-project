@@ -33,10 +33,6 @@ def get_connection():
         logging.error(f"Error connecting to MySQL DB: {e}")
         return None
 
-import os
-import mysql.connector
-import logging
-
 def reset_database():
     """
     Deletes all tables and recreates them using schema.sql.
