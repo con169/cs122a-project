@@ -180,36 +180,28 @@ def insertViewer(data):
 
 
 
-def addGenre(data):
-    uid, genre = data
-
+def addGenre(uid, genre):
+    """
+    Adds a new genre to a user, ensuring no duplicates and proper formatting.
+    """
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        # First, get the current genres for the user
-        cursor.execute(f"SELECT genres FROM users WHERE uid = {uid};")
+        cursor.execute("SELECT genres FROM users WHERE uid = %s;", (uid,))
         result = cursor.fetchone()
         if not result:
-            # fail if user doesnt exist
             print("Fail")
             return
 
-        current_genres = result[0]
-        # add new genre if genre not exits
-        if not current_genres or current_genres.strip() == "":
-            new_genres = genre
-        else:
-            # Split genre list on ';'
-            genres_list = [g.strip() for g in current_genres.split(';')]
-            if genre in genres_list:
-                # genre already exits, so do nt change
-                new_genres = current_genres
-            else:
-                new_genres = current_genres + ';' + genre
+        current_genres = result[0] if result[0] else ""
+        genres_list = set(g.strip().lower() for g in current_genres.split(';') if g.strip())
+        new_genre = genre.strip().lower()
 
-        sql_code = f"UPDATE users SET genres = '{new_genres}' WHERE uid = {uid};"
-        cursor.execute(sql_code)
-        conn.commit()
+        if new_genre not in genres_list:
+            genres_list.add(new_genre)
+            updated_genres = ';'.join(sorted(genres_list))
+            cursor.execute("UPDATE users SET genres = %s WHERE uid = %s;", (updated_genres, uid))
+            conn.commit()
         print("Success")
     except Exception as e:
         print("Fail", e)
