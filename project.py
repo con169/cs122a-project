@@ -184,11 +184,6 @@ def addGenre(uid, genre):
     """
     Adds a new genre to a user, ensuring no duplicates and proper formatting.
     """
-    if len(data) != 2:
-        print("Fail")
-        return
-    uid, genre = data
-    
     conn = get_connection()
     cursor = conn.cursor()
     try:
@@ -431,7 +426,7 @@ if __name__ == '__main__':
             sys.exit(1)
 
     if command == "insertViewer":
-        insertViewer(sys.argv[2:])
+        insertViewer(sys.argv[2], sys.argv[3])
 
     elif command == "addGenre":
         addGenre(sys.argv[2:])
