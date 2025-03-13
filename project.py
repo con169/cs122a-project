@@ -429,7 +429,7 @@ if __name__ == '__main__':
         insertViewer(sys.argv[2:])
 
     elif command == "addGenre":
-        addGenre(sys.argv[2:])
+        addGenre(sys.argv[2], sys.argv[3])
 
     elif command == "deleteViewer":
         deleteViewer(sys.argv[2])
