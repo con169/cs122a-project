@@ -195,18 +195,18 @@ def addGenre(data):
             print("Fail")
             return
 
-        current_genres = result[0]
+        current_genres = result[0] if result[0] else ""
         # add new genre if genre not exits
-        if not current_genres or current_genres.strip() == "":
-            new_genres = genre_normalized
-        else:
+        #if not current_genres or current_genres.strip() == "":
+        #    new_genres = genre_normalized
+        #else:
             # Split genre list on ';'
-            genres_list = [g.strip() for g in current_genres.split(';')]
-            if genre_normalized in genres_list:
-                # genre already exits, so do nt change
-                new_genres = current_genres
-            else:
-                new_genres = current_genres + ';' + genre_normalized
+        genres_list = [g.strip() for g in current_genres.split(';')] if current_genres else []
+        if genre_normalized in genres_list:
+            # genre already exits, so do nt change
+            new_genres = current_genres
+        else:
+            new_genres = current_genres + ';' + genre_normalized if current_genres else genre_normalized
 
         #sql_code = f"UPDATE users SET genres = '{new_genres}' WHERE uid = {uid};"
         #cursor.execute(sql_code)
