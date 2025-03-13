@@ -182,34 +182,37 @@ def insertViewer(data):
 def addGenre(data):
     uid, genre = data
 
+    # Normalize the input genre to lowercase
     genre_normalized = genre.lower()
-    
+
     conn = get_connection()
     cursor = conn.cursor()
     try:
+        # Log input values
+        print(f"DEBUG: uid: {uid}, genre: {genre}, normalized: {genre_normalized}")
+
         # First, get the current genres for the user
         cursor.execute("SELECT genres FROM users WHERE uid = %s;", (uid,))
         result = cursor.fetchone()
+        print(f"DEBUG: SELECT result: {result}")
         if not result:
-            # fail if user doesnt exist
             print("Fail")
             return
 
-        current_genres = result[0] if result[0] else ""
-        # add new genre if genre not exits
-        #if not current_genres or current_genres.strip() == "":
-        #    new_genres = genre_normalized
-        #else:
-            # Split genre list on ';'
-        genres_list = [g.strip() for g in current_genres.split(';')] if current_genres else []
-        if genre_normalized in genres_list:
-            # genre already exits, so do nt change
-            new_genres = current_genres
+        current_genres = result[0]
+        if not current_genres or current_genres.strip() == "":
+            new_genres = genre_normalized
         else:
-            new_genres = current_genres + ';' + genre_normalized if current_genres else genre_normalized
+            # Split the stored genres and normalize each for comparison
+            genres_list = [g.strip().lower() for g in current_genres.split(';')]
+            print(f"DEBUG: Existing genres list: {genres_list}")
+            if genre_normalized in genres_list:
+                new_genres = current_genres  # No change if genre already exists
+            else:
+                new_genres = current_genres + ';' + genre_normalized
 
-        #sql_code = f"UPDATE users SET genres = '{new_genres}' WHERE uid = {uid};"
-        #cursor.execute(sql_code)
+        print(f"DEBUG: new_genres to update: {new_genres}")
+
         cursor.execute("UPDATE users SET genres = %s WHERE uid = %s;", (new_genres, uid))
         conn.commit()
         print("Success")
@@ -218,6 +221,7 @@ def addGenre(data):
     finally:
         cursor.close()
         conn.close()
+
 
 def insertMovie(data):
     conn = get_connection()
