@@ -301,8 +301,8 @@ def listReleases(data):
         # Build the SQL query using an f-string.
         sql_code = (
             f"SELECT DISTINCT r.rid, r.genre, r.title "
-            f"FROM Releases r "
-            f"JOIN Reviews rev ON r.rid = rev.rid "
+            f"FROM releases r "
+            f"JOIN reviews rev ON r.rid = rev.rid "
             f"WHERE rev.uid = {uid} "
             f"ORDER BY r.title ASC;"
         )
