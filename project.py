@@ -432,32 +432,32 @@ if __name__ == '__main__':
             sys.stdout.write("Fail")
             sys.exit(1)
 
-     if command == "insertViewer":
-         insertViewer(sys.argv[2:])
- 
-     elif command == "addGenre":
-         addGenre(sys.argv[2:])
+    if command == "insertViewer":
+        insertViewer(sys.argv[2:])
 
-     elif command == "deleteViewer":
-         deleteViewer(sys.argv[2])
- 
-     elif command == "insertMovie":
-         insertMovie(sys.argv[2:])
- 
-     elif command == "insertSession":
-         insertSession(sys.argv[2:])
+    elif command == "addGenre":
+        addGenre(sys.argv[2:])
 
-     elif command == "updateRelease":
-         updateRelease(sys.argv[2:])
-    
-     elif command == "popularRelease":
-         popularRelease(sys.argv[2:])
- 
-     elif command == "releaseTitle":
-         releaseTitle(sys.argv[2])
- 
-     elif command == "activeViewer":
-         activeViewer(sys.argv[2], sys.argv[3], sys.argv[4])
- 
-     elif command == "videosViewed":
-         videosViewed(sys.argv[2])
+    elif command == "deleteViewer":
+        deleteViewer(sys.argv[2])
+
+    elif command == "insertMovie":
+        insertMovie(sys.argv[2:])
+
+    elif command == "insertSession":
+        insertSession(sys.argv[2:])
+
+    elif command == "updateRelease":
+        updateRelease(sys.argv[2:])
+
+    elif command == "popularRelease":
+        popularRelease(sys.argv[2:])
+
+    elif command == "releaseTitle":
+        releaseTitle(sys.argv[2])
+
+    elif command == "activeViewer":
+        activeViewer(sys.argv[2], sys.argv[3], sys.argv[4])
+
+    elif command == "videosViewed":
+        videosViewed(sys.argv[2])
