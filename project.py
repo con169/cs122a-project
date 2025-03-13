@@ -450,6 +450,9 @@ if __name__ == '__main__':
     elif command == "updateRelease":
         updateRelease(sys.argv[2:])
 
+    elif command == "listReleases":
+         listReleases(sys.argv[2])
+
     elif command == "popularRelease":
         popularRelease(sys.argv[2:])
 
