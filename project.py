@@ -14,24 +14,20 @@ except ImportError:
     pass  # No error, just skip loading .env if it's missing
 
 # Configure logging (logging goes to stderr by default)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+#logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def get_connection():
     """
     Establish a MySQL connection with local_infile enabled.
     """
     try:
-        conn = mysql.connector.connect(
-            host=os.getenv('MYSQL_HOST'),
-            user=os.getenv('MYSQL_USER'),
-            password=os.getenv('MYSQL_PASSWORD'),
-            database='cs122a',
+        conn = mysql.connector.connect(user='test', password='password', database='cs122a',
             allow_local_infile=True  # Needed for LOAD DATA LOCAL INFILE
         )
-        logging.info("Connected to MySQL DB successfully")
+        #logging.info("Connected to MySQL DB successfully")
         return conn
     except mysql.connector.Error as e:
-        logging.error(f"Error connecting to MySQL DB: {e}")
+        #logging.error(f"Error connecting to MySQL DB: {e}")
         return None
 
 def reset_database():
@@ -51,12 +47,12 @@ def reset_database():
         tables = ["reviews", "sessions", "videos", "series", "movies", "releases", "producers", "viewers", "users"]
         for table in tables:
             cursor.execute(f"DROP TABLE IF EXISTS {table};")
-            logging.info(f"Dropped table {table}")
+            #logging.info(f"Dropped table {table}")
 
         # Read and execute schema.sql
         schema_path = os.path.join(os.path.dirname(__file__), "schema.sql")
         if not os.path.exists(schema_path):
-            logging.error(f"Error: schema.sql file not found at {schema_path}!")
+            #logging.error(f"Error: schema.sql file not found at {schema_path}!")
             return False
 
         with open(schema_path, "r") as ddl_file:
@@ -64,10 +60,10 @@ def reset_database():
             for statement in schema_sql.split(";"):
                 if statement.strip():
                     cursor.execute(statement)
-            logging.info("Recreated tables from schema.sql.")
+            #logging.info("Recreated tables from schema.sql.")
 
     except mysql.connector.Error as e:
-        logging.error(f"Error resetting database: {e}")
+        #logging.error(f"Error resetting database: {e}")
         return False
     finally:
         conn.commit()
@@ -83,7 +79,7 @@ def import_csv_with_insert(folder):
     """
     conn = get_connection()
     if not conn:
-        logging.error("Unable to establish a connection. Aborting import.")
+        #logging.error("Unable to establish a connection. Aborting import.")
         return False
 
     cursor = conn.cursor()
@@ -93,11 +89,11 @@ def import_csv_with_insert(folder):
     for table in tables:
         file_path = os.path.join(folder, f"{table}.csv")
         if not os.path.exists(file_path):
-            logging.warning(f"File {file_path} not found. Skipping.")
+            #logging.warning(f"File {file_path} not found. Skipping.")
             continue
 
         try:
-            logging.info(f"Importing {table}.csv into table {table}...")
+            #logging.info(f"Importing {table}.csv into table {table}...")
             with open(file_path, newline='', encoding='utf-8') as csvfile:
                 reader = csv.reader(csvfile)
                 columns = next(reader)  # Read header row
@@ -108,9 +104,9 @@ def import_csv_with_insert(folder):
                 for row in reader:
                     cursor.execute(insert_query, row)
             conn.commit()
-            logging.info(f"Successfully imported {table}.csv")
+            #logging.info(f"Successfully imported {table}.csv")
         except mysql.connector.Error as e:
-            logging.error(f"Error importing {table}.csv: {e}")
+            #logging.error(f"Error importing {table}.csv: {e}")
             return False
 
     cursor.close()
@@ -136,11 +132,218 @@ def verify_data():
         releases_count = cursor.fetchone()[0]
         return users_count > 0 and producers_count > 0 and releases_count > 0
     except mysql.connector.Error as e:
-        logging.error(f"Error verifying data: {e}")
-        return False
+        #logging.error(f"Error verifying data: {e}")
+         print("False")
     finally:
         cursor.close()
         conn.close()
+
+def insertViewer(data):
+    # Order:
+    # [uid, email, nickname, street, city, state, zip, genres, joined_date, first, last, subscription]
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    uid, email, nickname, street, city, state, zip_code, genres, joined_date, first, last, subscription = data
+    try:
+        # Check if uid already exists
+        cursor.execute(f"SELECT COUNT(*) FROM users WHERE uid ='{uid}'")
+        if cursor.fetchone()[0] > 0:
+            print("Fail")
+            return
+
+
+        # First need to insert into User table, then we will insert into viewer table.
+
+        user_sql_code = (
+            f"INSERT INTO users (uid, email, joined_date, nickname, street, city, state, zip, genres) "
+            f"VALUES ({uid}, '{email}', '{joined_date}', '{nickname}', '{street}', '{city}', '{state}', '{zip_code}', '{genres}');"
+        )
+        cursor.execute(user_sql_code)
+
+
+        # now to insert into viewer the extra information
+        viewer_sql_code = (
+            f"INSERT INTO viewers (uid, first_name, last_name, subscription) "
+            f"VALUES ({uid}, '{first}', '{last}', '{subscription}');"
+        )
+        cursor.execute(viewer_sql_code)
+
+        conn.commit()
+        print("Success")
+
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+def addGenre(data):
+    uid, genre = data
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        # First, get the current genres for the user
+        cursor.execute(f"SELECT genres FROM users WHERE uid = {uid};")
+        result = cursor.fetchone()
+        if not result:
+            # fail if user doesnt exist
+            print("Fail")
+            return
+
+        current_genres = result[0]
+        # add new genre if genre not exits
+        if not current_genres or current_genres.strip() == "":
+            new_genres = genre
+        else:
+            # Split genre list on ';'
+            genres_list = [g.strip() for g in current_genres.split(';')]
+            if genre in genres_list:
+                # genre already exits, so do nt change
+                new_genres = current_genres
+            else:
+                new_genres = current_genres + ';' + genre
+
+        sql_code = f"UPDATE users SET genres = '{new_genres}' WHERE uid = {uid};"
+        cursor.execute(sql_code)
+        conn.commit()
+        print("Success")
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def insertMovie(data):
+    conn = get_connection()
+    cursor = conn.cursor()
+    rid,website_url = data
+
+    try:
+        sql_code = (
+            f"INSERT INTO movies (rid, website_url) "
+            f"VALUES ('{rid}','{website_url}');"
+        )
+        cursor.execute(sql_code)
+        conn.commit()
+        print("Success")
+
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def deleteViewer(data):
+    conn = get_connection()
+    cursor = conn.cursor()
+    uid = data
+
+    try:
+        sql_code = (
+            f"DELETE FROM viewers "
+            f"WHERE uid = '{uid}';"
+        )
+        cursor.execute(sql_code)
+        conn.commit()
+        print("Success")
+
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def insertSession(data):
+    sid, uid, rid, ep_num, initiate_at, leave_at, quality, device = data
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        # Build the SQL command. Note that numeric fields are not quoted while datetime and ENUM strings are.
+        sql_code = (
+            f"INSERT INTO sessions (sid, uid, rid, ep_num, initiate_at, leave_at, quality, device) "
+            f"VALUES ({sid}, {uid}, {rid}, {ep_num}, '{initiate_at}', '{leave_at}', '{quality}', '{device}');"
+        )
+        cursor.execute(sql_code)
+        conn.commit()
+        print("Success")
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def updateRelease(data):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    rid, title = data
+    try:
+        sql_code = f"UPDATE releases SET title = '{title}' WHERE rid = {rid};"
+        cursor.execute(sql_code)
+        conn.commit()
+        print("Success")
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def listReleases(data):
+    conn = get_connection()
+    cursor = conn.cursor()
+    uid = data
+
+
+    try:
+        # Build the SQL query using an f-string.
+        sql_code = (
+            f"SELECT DISTINCT r.rid, r.genre, r.title "
+            f"FROM Releases r "
+            f"JOIN Reviews rev ON r.rid = rev.rid "
+            f"WHERE rev.uid = {uid} "
+            f"ORDER BY r.title ASC;"
+        )
+        cursor.execute(sql_code)
+        rows = cursor.fetchall()
+        # Print each row as comma-separated values
+        for row in rows:
+            print(",".join(str(x) for x in row))
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def popularRelease(data):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    num = int(data[0])
+    try:
+        sql_code = (
+            f"SELECT R.rid, R.title, COUNT(Rev.rvid) as reviewCount "
+            f"FROM releases R "
+            f"LEFT JOIN reviews Rev ON R.rid = Rev.rid "
+            f"GROUP BY R.rid, R.title "
+            f"ORDER by reviewCount DESC, R.rid DESC "
+            f"LIMIT {num}; "
+        )
+        cursor.execute(sql_code)
+        rows = cursor.fetchall()
+        for row in rows:
+            print(",".join(str(x) for x in row))
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+
 
 if __name__ == '__main__':
     # Expect: python3 project.py import test_data
@@ -162,3 +365,24 @@ if __name__ == '__main__':
         else:
             sys.stdout.write("Fail")
             sys.exit(1)
+
+    if command == "insertViewer":
+        insertViewer(sys.argv[2:])
+
+    if command == "addGenre":
+        addGenre(sys.argv[2:])
+
+    if command == "deleteViewer":
+        deleteViewer(sys.argv[2])
+
+    if command == "insertMovie":
+        insertMovie(sys.argv[2:])
+
+    if command == "insertSession":
+        insertSession(sys.argv[2:])
+
+    if command == "updateRelease":
+        updateRelease(sys.argv[2:])
+
+    if command == "popularRelease":
+        popularRelease(sys.argv[2:])
