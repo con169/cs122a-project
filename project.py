@@ -393,26 +393,24 @@ def videosViewed(rid):
     cursor = conn.cursor()
     try:
         sql_code = (
-            "SELECT v.rid, v.ep_num, v.title, v.length, COUNT(DISTINCT s.uid) AS view_count "
+            "SELECT v.rid, v.ep_num, v.title, v.length, "
+            "(SELECT COUNT(DISTINCT s.uid) FROM sessions s WHERE s.rid = v.rid AND s.ep_num = v.ep_num) AS viewers "
             "FROM videos v "
-            "LEFT JOIN sessions s ON v.rid = s.rid AND v.ep_num = s.ep_num "
             "WHERE v.rid = %s "
             "ORDER BY v.rid DESC;"
         )
         cursor.execute(sql_code, (rid,))
         rows = cursor.fetchall()
 
-        # print 0 instead of NULL when no viewers exist
         for row in rows:
-            rid, ep_num, title, length, view_count = row
-            view_count = view_count if view_count is not None else 0
-            print(",".join(str(x) for x in (rid, ep_num, title, length, view_count)))
+            print(",".join(str(x) for x in row))
 
     except Exception as e:
         print("Fail", e)
     finally:
         cursor.close()
         conn.close()
+
 
 if __name__ == '__main__':
     # Expect: python3 project.py import test_data
