@@ -262,7 +262,6 @@ def insertSession(data):
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        # Build the SQL command. Note that numeric fields are not quoted while datetime and ENUM strings are.
         sql_code = (
             f"INSERT INTO sessions (sid, uid, rid, ep_num, initiate_at, leave_at, quality, device) "
             f"VALUES ({sid}, {uid}, {rid}, {ep_num}, '{initiate_at}', '{leave_at}', '{quality}', '{device}');"
@@ -298,7 +297,6 @@ def listReleases(data):
     uid = data
 
     try:
-        # Build the SQL query using an f-string.
         sql_code = (
             f"SELECT DISTINCT r.rid, r.genre, r.title "
             f"FROM releases r "
@@ -308,7 +306,7 @@ def listReleases(data):
         )
         cursor.execute(sql_code)
         rows = cursor.fetchall()
-        # Print each row as comma-separated values
+
         for row in rows:
             print(",".join(str(x) for x in row))
     except Exception as e:
