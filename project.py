@@ -393,14 +393,14 @@ def videosViewed(rid):
     cursor = conn.cursor()
     try:
         sql_code = (
-            "SELECT v.rid, v.ep_num, v.title, v.length, IFNULL(COUNT(DISTINCT s.uid), 0) AS view_count "
+            "SELECT v.rid, v.ep_num, v.title, v.length, COALESCE(COUNT(DISTINCT s.uid), 0) AS view_count "
             "FROM videos v "
             "LEFT JOIN sessions s ON v.rid = s.rid AND v.ep_num = s.ep_num "
-            "WHERE v.rid = %s OR %s IS NULL "
+            "WHERE v.rid = %s "
             "GROUP BY v.rid, v.ep_num, v.title, v.length "
             "ORDER BY v.rid DESC, v.ep_num ASC;"
         )
-        cursor.execute(sql_code, (rid, rid))
+        cursor.execute(sql_code, (rid,))
         rows = cursor.fetchall()
         for row in rows:
             print(",".join(str(x) for x in row))
@@ -409,7 +409,6 @@ def videosViewed(rid):
     finally:
         cursor.close()
         conn.close()
-
 
 if __name__ == '__main__':
     # Expect: python3 project.py import test_data
