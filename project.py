@@ -179,35 +179,42 @@ def insertViewer(data):
         conn.close()
 
 
-
-def addGenre(uid, genre):
-    """
-    Adds a new genre to a user, ensuring no duplicates and proper formatting.
-    """
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT genres FROM users WHERE uid = %s;", (uid,))
-        result = cursor.fetchone()
-        if not result:
-            print("Fail")
-            return
-
-        current_genres = result[0] if result[0] else ""
-        genres_list = [g.strip() for g in current_genres.split(';') if g.strip()]
-        
-        if genre not in genres_list:
-            genres_list.append(genre)  # Preserve insertion order
-            updated_genres = ';'.join(genres_list)
-            cursor.execute("UPDATE users SET genres = %s WHERE uid = %s;", (updated_genres, uid))
-            conn.commit()
-        
-        print("Success")
-    except Exception as e:
-        print("Fail", e)
-    finally:
-        cursor.close()
-        conn.close()
+def addGenre(data):
+     uid, genre = data
+ 
+     conn = get_connection()
+     cursor = conn.cursor()
+     try:
+         # First, get the current genres for the user
+         cursor.execute(f"SELECT genres FROM users WHERE uid = {uid};")
+         result = cursor.fetchone()
+         if not result:
+             # fail if user doesnt exist
+             print("Fail")
+             return
+ 
+         current_genres = result[0]
+         # add new genre if genre not exits
+         if not current_genres or current_genres.strip() == "":
+             new_genres = genre
+         else:
+             # Split genre list on ';'
+             genres_list = [g.strip() for g in current_genres.split(';')]
+             if genre in genres_list:
+                 # genre already exits, so do nt change
+                 new_genres = current_genres
+             else:
+                 new_genres = current_genres + ';' + genre
+ 
+         sql_code = f"UPDATE users SET genres = '{new_genres}' WHERE uid = {uid};"
+         cursor.execute(sql_code)
+         conn.commit()
+         print("Success")
+     except Exception as e:
+         print("Fail", e)
+     finally:
+         cursor.close()
+         conn.close()
 
 def insertMovie(data):
     conn = get_connection()
@@ -425,32 +432,32 @@ if __name__ == '__main__':
             sys.stdout.write("Fail")
             sys.exit(1)
 
-    if command == "insertViewer":
-        insertViewer(sys.argv[2])
+     if command == "insertViewer":
+         insertViewer(sys.argv[2:])
+ 
+     elif command == "addGenre":
+         addGenre(sys.argv[2:])
 
-    elif command == "addGenre":
-        addGenre(sys.argv[2], sys.argv[3])
+     elif command == "deleteViewer":
+         deleteViewer(sys.argv[2])
+ 
+     elif command == "insertMovie":
+         insertMovie(sys.argv[2:])
+ 
+     elif command == "insertSession":
+         insertSession(sys.argv[2:])
 
-    elif command == "deleteViewer":
-        deleteViewer(sys.argv[2])
-
-    elif command == "insertMovie":
-        insertMovie(sys.argv[2:])
-
-    elif command == "insertSession":
-        insertSession(sys.argv[2:])
-
-    elif command == "updateRelease":
-        updateRelease(sys.argv[2:])
-
-    elif command == "popularRelease":
-        popularRelease(sys.argv[2:])
-
-    elif command == "releaseTitle":
-        releaseTitle(sys.argv[2])
-
-    elif command == "activeViewer":
-        activeViewer(sys.argv[2], sys.argv[3], sys.argv[4])
-
-    elif command == "videosViewed":
-        videosViewed(sys.argv[2])
+     elif command == "updateRelease":
+         updateRelease(sys.argv[2:])
+    
+     elif command == "popularRelease":
+         popularRelease(sys.argv[2:])
+ 
+     elif command == "releaseTitle":
+         releaseTitle(sys.argv[2])
+ 
+     elif command == "activeViewer":
+         activeViewer(sys.argv[2], sys.argv[3], sys.argv[4])
+ 
+     elif command == "videosViewed":
+         videosViewed(sys.argv[2])
