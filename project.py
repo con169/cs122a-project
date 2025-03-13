@@ -393,10 +393,10 @@ def videosViewed(rid):
     cursor = conn.cursor()
     try:
         sql_code = (
-            "SELECT v.rid, v.ep_num, v.title, v.length, "
-            "(SELECT COUNT(DISTINCT s.uid) FROM sessions s WHERE s.rid = v.rid AND s.ep_num = v.ep_num) AS viewers "
-            "FROM videos v "
-            "WHERE v.rid = %s "
+            "SELECT v.rid, v.ep_num, v.title, v.length,"
+            "(SELECT COUNT(DISTINCT s.uid) FROM sessions s WHERE s.rid = v.rid AND s.ep_num = v.ep_num) AS viewers"
+            "FROM videos v"
+            "WHERE v.rid = %s"
             "ORDER BY v.rid DESC;"
         )
         cursor.execute(sql_code, (rid,))
