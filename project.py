@@ -300,11 +300,11 @@ def listReleases(data):
     try:
         # Build the SQL query using an f-string.
         sql_code = (
-            "SELECT DISTINCT r.rid, r.genre, r.title "
-            "FROM releases r "
-            "JOIN reviews rev ON r.rid = rev.rid "
-            "WHERE rev.uid = %s "
-            "ORDER BY r.title ASC;"
+            f"SELECT DISTINCT r.rid, r.genre, r.title "
+            f"FROM Releases r "
+            f"JOIN Reviews rev ON r.rid = rev.rid "
+            f"WHERE rev.uid = {uid} "
+            f"ORDER BY r.title ASC;"
         )
         cursor.execute(sql_code)
         rows = cursor.fetchall()
