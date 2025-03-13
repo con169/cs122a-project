@@ -343,6 +343,27 @@ def popularRelease(data):
         cursor.close()
         conn.close()
 
+def releaseTitle(sid):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        sql_code = (
+            "SELECT r.rid, r.title AS release_title, r.genre, v.title AS video_title, v.ep_num, v.length "
+            "FROM releases r "
+            "JOIN videos v ON r.rid = v.rid "
+            "JOIN sessions s ON v.rid = s.rid AND v.ep_num = s.ep_num "
+            "WHERE s.sid = %s "
+            "ORDER BY r.title ASC;"
+        )
+        cursor.execute(sql_code, (sid,))
+        rows = cursor.fetchall()
+        for row in rows:
+            print(",".join(str(x) for x in row))
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
 
 
 if __name__ == '__main__':
@@ -386,3 +407,6 @@ if __name__ == '__main__':
 
     if command == "popularRelease":
         popularRelease(sys.argv[2:])
+
+    if command == "releaseTitle":
+        releaseTitle(sys.argv[2])
