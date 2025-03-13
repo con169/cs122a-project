@@ -366,6 +366,52 @@ def releaseTitle(sid):
         conn.close()
 
 
+def activeViewer(N, start, end):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        sql_code = (
+            "SELECT v.uid, v.first_name, v.last_name "
+            "FROM viewers v "
+            "JOIN sessions s ON v.uid = s.uid "
+            "WHERE s.initiate_at BETWEEN %s AND %s "
+            "GROUP BY v.uid "
+            "HAVING COUNT(s.sid) >= %s "
+            "ORDER BY v.uid ASC;"
+        )
+        cursor.execute(sql_code, (start, end, N))
+        rows = cursor.fetchall()
+        for row in rows:
+            print(",".join(str(x) for x in row))
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def videosViewed(rid):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        sql_code = (
+            "SELECT v.rid, v.ep_num, v.title, v.length, COUNT(DISTINCT s.uid) AS view_count "
+            "FROM videos v "
+            "LEFT JOIN sessions s ON v.rid = s.rid AND v.ep_num = s.ep_num "
+            "WHERE v.rid = %s "
+            "GROUP BY v.rid, v.ep_num, v.title, v.length "
+            "ORDER BY v.rid DESC;"
+        )
+        cursor.execute(sql_code, (rid,))
+        rows = cursor.fetchall()
+        for row in rows:
+            print(",".join(str(x) for x in row))
+    except Exception as e:
+        print("Fail", e)
+    finally:
+        cursor.close()
+        conn.close()
+
+
 if __name__ == '__main__':
     # Expect: python3 project.py import test_data
     if len(sys.argv) < 2:
@@ -390,23 +436,29 @@ if __name__ == '__main__':
     if command == "insertViewer":
         insertViewer(sys.argv[2:])
 
-    if command == "addGenre":
+    elif command == "addGenre":
         addGenre(sys.argv[2:])
 
-    if command == "deleteViewer":
+    elif command == "deleteViewer":
         deleteViewer(sys.argv[2])
 
-    if command == "insertMovie":
+    elif command == "insertMovie":
         insertMovie(sys.argv[2:])
 
-    if command == "insertSession":
+    elif command == "insertSession":
         insertSession(sys.argv[2:])
 
-    if command == "updateRelease":
+    elif command == "updateRelease":
         updateRelease(sys.argv[2:])
 
-    if command == "popularRelease":
+    elif command == "popularRelease":
         popularRelease(sys.argv[2:])
 
-    if command == "releaseTitle":
+    elif command == "releaseTitle":
         releaseTitle(sys.argv[2])
+
+    elif command == "activeViewer":
+        activeViewer(sys.argv[2], sys.argv[3], sys.argv[4])
+
+    elif command == "videosViewed":
+        videosViewed(sys.argv[2])
