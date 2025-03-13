@@ -184,6 +184,11 @@ def addGenre(uid, genre):
     """
     Adds a new genre to a user, ensuring no duplicates and proper formatting.
     """
+    if len(data) != 2:
+        print("Fail")
+        return
+    uid, genre = data
+    
     conn = get_connection()
     cursor = conn.cursor()
     try:
@@ -194,14 +199,14 @@ def addGenre(uid, genre):
             return
 
         current_genres = result[0] if result[0] else ""
-        genres_list = set(g.strip().lower() for g in current_genres.split(';') if g.strip())
-        new_genre = genre.strip().lower()
-
-        if new_genre not in genres_list:
-            genres_list.add(new_genre)
-            updated_genres = ';'.join(sorted(genres_list))
+        genres_list = [g.strip() for g in current_genres.split(';') if g.strip()]
+        
+        if genre not in genres_list:
+            genres_list.append(genre)  # Preserve insertion order
+            updated_genres = ';'.join(genres_list)
             cursor.execute("UPDATE users SET genres = %s WHERE uid = %s;", (updated_genres, uid))
             conn.commit()
+        
         print("Success")
     except Exception as e:
         print("Fail", e)
