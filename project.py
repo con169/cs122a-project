@@ -393,7 +393,8 @@ def videosViewed(rid):
     cursor = conn.cursor()
     try:
         sql_code = (
-            "SELECT v.rid, v.ep_num, v.title, v.length, COALESCE(COUNT(DISTINCT s.uid), 0) AS view_count "
+            "SELECT v.rid, v.ep_num, v.title, v.length, "
+            "COALESCE(COUNT(DISTINCT s.uid), 0) AS view_count "
             "FROM videos v "
             "LEFT JOIN sessions s ON v.rid = s.rid AND v.ep_num = s.ep_num "
             "WHERE v.rid = %s "
@@ -409,6 +410,7 @@ def videosViewed(rid):
     finally:
         cursor.close()
         conn.close()
+
 
 if __name__ == '__main__':
     # Expect: python3 project.py import test_data
