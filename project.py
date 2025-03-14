@@ -208,6 +208,8 @@ def addGenre(data):
         # Print the updated genres string instead of "Success"
         #print(new_genres)
         sys.stdout.write("Success")
+        sys.stdout.flush()
+        
     except Exception as e:
         print("Fail", e)
     finally:
