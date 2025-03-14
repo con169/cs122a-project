@@ -206,7 +206,8 @@ def addGenre(data):
         cursor.execute("UPDATE users SET genres = %s WHERE uid = %s;", (new_genres, uid))
         conn.commit()
         # Print the updated genres string instead of "Success"
-        print(new_genres)
+        #print(new_genres)
+        sys.stdout.write("Success")
     except Exception as e:
         print("Fail", e)
     finally:
