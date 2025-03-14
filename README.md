@@ -25,6 +25,7 @@
     MYSQL_USER={your_root}
     MYSQL_PASSWORD={your_password}
     ```
+This works for testing the python script on your local server using `python local.py {Arguments}`
 
 5. Run using command line:
 ``` python project.py ```
