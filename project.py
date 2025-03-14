@@ -207,14 +207,14 @@ def addGenre(data):
         conn.commit()
         # Print the updated genres string instead of "Success"
         #sys.stdout.write("Success")
-        sys.exit(0)
+        #sys.exit(0)
         
     except Exception as e:
         print("Fail", e)
     finally:
         cursor.close()
         conn.close()
-
+        return True
 
 
 def insertMovie(data):
