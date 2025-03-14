@@ -226,7 +226,7 @@ def insertMovie(data):
         )
         cursor.execute(sql_code)
         conn.commit()
-        print("Success")
+        #print("Success")
 
     except Exception as e:
         print("Fail", e)
