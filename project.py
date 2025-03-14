@@ -200,7 +200,7 @@ def addGenre(data):
             # Compare in a case-insensitive way or as specified
             genres_list_lower = [g.strip().lower() for g in current_genres.split(';')]
             if genre.lower() in genres_list_lower:
-                # If it's already there, print "Fail" if that's what the spec wants
+                # If it's already there, print "Fail" (not specified in documenation)
                 print("Fail")
                 return
             else:
