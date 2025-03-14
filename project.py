@@ -196,7 +196,7 @@ def addGenre(data):
         if not current_genres or current_genres.strip() == "":
             new_genres = genre  # Use the original formatting
         else:
-            # Create a lowercase list for comparison only
+            # Create a lowercase list for comparison
             genres_list_lower = [g.strip().lower() for g in current_genres.split(';')]
             if genre.lower() in genres_list_lower:
                 new_genres = current_genres  # No change if genre already exists
@@ -205,12 +205,14 @@ def addGenre(data):
 
         cursor.execute("UPDATE users SET genres = %s WHERE uid = %s;", (new_genres, uid))
         conn.commit()
-        print("Success")
+        # Print the updated genres string instead of "Success"
+        print(new_genres)
     except Exception as e:
         print("Fail", e)
     finally:
         cursor.close()
         conn.close()
+
 
 
 def insertMovie(data):
