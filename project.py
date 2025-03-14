@@ -4,15 +4,6 @@ import sys
 import csv
 import logging
 
-#from dotenv import load_dotenv
-
-# Try loading dotenv only if it's available (for local testing)
-try:
-    import dotenv
-    dotenv.load_dotenv()
-except ImportError:
-    pass  # No error, just skip loading .env if it's missing
-
 # Configure logging (logging goes to stderr by default)
 #logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -152,7 +143,6 @@ def insertViewer(data):
             print("Fail")
             return
 
-
         # First need to insert into User table, then we will insert into viewer table.
 
         user_sql_code = (
@@ -160,7 +150,6 @@ def insertViewer(data):
             f"VALUES ({uid}, '{email}', '{joined_date}', '{nickname}', '{street}', '{city}', '{state}', '{zip_code}', '{genres}');"
         )
         cursor.execute(user_sql_code)
-
 
         # now to insert into viewer the extra information
         viewer_sql_code = (
@@ -177,7 +166,6 @@ def insertViewer(data):
     finally:
         cursor.close()
         conn.close()
-
 
 def addGenre(data):
     uid, genre = data
@@ -215,8 +203,6 @@ def addGenre(data):
     finally:
         cursor.close()
         conn.close()
-
-
 
 def insertMovie(data):
     conn = get_connection()
