@@ -185,36 +185,37 @@ def addGenre(data):
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        # Get the current genres for the user
         cursor.execute("SELECT genres FROM users WHERE uid = %s;", (uid,))
         result = cursor.fetchone()
         if not result:
+            # If no user found
             print("Fail")
             return
 
         current_genres = result[0]
         if not current_genres or current_genres.strip() == "":
-            new_genres = genre  # Use the original formatting
+            # If empty, just add it
+            new_genres = genre
         else:
-            # Create a lowercase list for comparison
+            # Compare in a case-insensitive way or as specified
             genres_list_lower = [g.strip().lower() for g in current_genres.split(';')]
             if genre.lower() in genres_list_lower:
-                new_genres = current_genres  # No change if genre already exists
+                # If it's already there, print "Fail" if that's what the spec wants
+                print("Fail")
+                return
             else:
-                new_genres = current_genres + ';' + genre  # Append original input
+                # Otherwise append it
+                new_genres = current_genres + ";" + genre
 
         cursor.execute("UPDATE users SET genres = %s WHERE uid = %s;", (new_genres, uid))
         conn.commit()
-        # Print the updated genres string instead of "Success"
-        #sys.stdout.write("Success")
-        #sys.exit(0)
-        
+        print("Success")
     except Exception as e:
         print("Fail", e)
     finally:
         cursor.close()
         conn.close()
-        return True
+
 
 
 def insertMovie(data):
@@ -435,10 +436,7 @@ if __name__ == '__main__':
         insertViewer(sys.argv[2:])
 
     elif command == "addGenre":
-        success = addGenre(sys.argv[2:])
-        if success:
-            sys.stdout.write("Success")
-            sys.exit(0)
+        addGenre(sys.argv[2:])
             
     elif command == "deleteViewer":
         deleteViewer(sys.argv[2])
